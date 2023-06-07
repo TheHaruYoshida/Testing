@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Sale = require('../models/Sale');
+const auctionController = require('../controllers/auctionController');
 
 // Ruta para obtener todos los usuarios
 router.get('/', async (req, res) => {
@@ -30,10 +31,10 @@ router.get('/:id', async (req, res) => {
 
 // Ruta para crear un usuario
 router.post('/', async (req, res) => {
-  const { full_name, email, contact } = req.body;
+  const { nickname, email, contact } = req.body;
 
   // Validación de datos
-  if (!full_name || !email || !contact) {
+  if (!nickname || !email || !contact) {
     return res.status(400).json({ error: 'Por favor, completa todos los campos obligatorios' });
   }
 
@@ -49,7 +50,7 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: 'El correo electrónico ya está en uso' });
     }
 
-    const newUser = await User.create({ full_name, email, contact, created_at: new Date() });
+    const newUser = await User.create({ nickname, email, contact, created_at: new Date() });
     return res.json(newUser);
   } catch (error) {
     console.error(error);
@@ -60,11 +61,11 @@ router.post('/', async (req, res) => {
 // Ruta para actualizar un usuario por su ID
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { full_name, email, contact } = req.body;
+  const { nickname, email, contact } = req.body;
   try {
     const user = await User.findByPk(id);
     if (user) {
-      user.full_name = full_name;
+      user.nickname = nickname;
       user.email = email;
       user.contact = contact;
       await user.save();
@@ -138,6 +139,31 @@ router.get('/:id/sales', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener las ventas del usuario' });
+  }
+});
+
+// Modo subasta
+// Ruta para crear una subasta para un usuario
+router.post('/:id/auctions', async (req, res) => {
+  const { id } = req.params;
+  const { price, description, quantity } = req.body;
+
+  // Validación de datos
+  if (!price || !description || !quantity) {
+    return res.status(400).json({ error: 'Por favor, completa todos los campos obligatorios' });
+  }
+
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const auction = await auctionController.createAuction(req, res);
+    return res.json(auction);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Ha ocurrido un error al crear la subasta' });
   }
 });
 

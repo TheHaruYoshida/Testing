@@ -46,14 +46,8 @@ sequelize.sync()
     console.log('Base de datos sincronizada correctamente.');
 
     // Configurar rutas
-    // Aquí debes importar y configurar las rutas de tu aplicación
-    // Ejemplo:
-    // const userRoutes = require('./routes/userRoutes');
-    // const auctionRoutes = require('./routes/auctionRoutes');
-    // ...
-    // app.use('/users', userRoutes);
-    // app.use('/auctions', auctionRoutes);
-    // ...
+    app.use('/users', userRoutes);
+    // Agrega aquí las demás rutas de tu aplicación
 
     // Iniciar el servidor
     app.listen(port, () => {
@@ -63,6 +57,3 @@ sequelize.sync()
   .catch((error) => {
     console.error('Error al sincronizar la base de datos:', error);
   });
-
-  // Configurar las rutas
-app.use('/users', userRoutes);

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../database/connection');
 const User = require('./User');
-const Card = require('./Card'); // Agrega esta línea para importar el modelo Card
+const Card = require('./Card');
 
 const Auction = sequelize.define('Auction', {
   id: {
