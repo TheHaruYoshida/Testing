@@ -1,3 +1,5 @@
+const http = require('http');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./database/connection');
@@ -46,7 +48,8 @@ sequelize.sync()
     console.log('Base de datos sincronizada correctamente.');
 
     // Configurar rutas
-    app.use('/users', userRoutes);
+    // app.use('/users', userRoutes);
+    app.use(userRoutes);
     // Agrega aquí las demás rutas de tu aplicación
 
     // Iniciar el servidor
@@ -57,3 +60,4 @@ sequelize.sync()
   .catch((error) => {
     console.error('Error al sincronizar la base de datos:', error);
   });
+

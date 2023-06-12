@@ -3,19 +3,25 @@ const router = express.Router();
 const User = require('../models/User');
 const Sale = require('../models/Sale');
 const auctionController = require('../controllers/auctionController');
+const Auction = require('../models/Auction');
+
 
 // Ruta para obtener todos los usuarios
-router.get('/', async (req, res) => {
+router.get('/searchusers', async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      limit: 10,
+      order: [['createdAt', 'DESC']],
+    });
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener los usuarios' });
   }
 });
 
+
 // Ruta para obtener un usuario por su ID
-router.get('/:id', async (req, res) => {
+router.get('/searchuser/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.findByPk(id);
@@ -30,7 +36,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Ruta para crear un usuario
-router.post('/', async (req, res) => {
+router.post('/createuser/', async (req, res) => {
   const { nickname, email, contact } = req.body;
 
   // Validación de datos
@@ -50,6 +56,12 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: 'El correo electrónico ya está en uso' });
     }
 
+    // Verificar si el nickname ya está en uso
+    const existingNickname = await User.findOne({ where: { nickname } });
+    if (existingNickname) {
+      return res.status(409).json({ error: 'El nickname ya está en uso' });
+    }
+
     const newUser = await User.create({ nickname, email, contact, created_at: new Date() });
     return res.json(newUser);
   } catch (error) {
@@ -59,7 +71,7 @@ router.post('/', async (req, res) => {
 });
 
 // Ruta para actualizar un usuario por su ID
-router.put('/:id', async (req, res) => {
+router.put('/updateuser/:id', async (req, res) => {
   const { id } = req.params;
   const { nickname, email, contact } = req.body;
   try {
@@ -79,7 +91,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Ruta para eliminar un usuario por su ID
-router.delete('/:id', async (req, res) => {
+router.delete('/deleteuser/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.findByPk(id);
@@ -95,7 +107,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Ruta para crear una venta para un usuario
-router.post('/:id/sales', async (req, res) => {
+router.post('/createsales/:id/', async (req, res) => {
   const { id } = req.params;
   const { price, description, quantity } = req.body;
 
@@ -126,11 +138,63 @@ router.post('/:id/sales', async (req, res) => {
   }
 });
 
+// Ruta para obtener todas las ventas
+router.get('/searchsales', async (req, res) => {
+  try {
+    const sales = await Sale.findAll({
+      limit: 10, // 10 ventas
+      order: [['createdAt', 'DESC']], // Ordenar por fecha de creación
+    });
+    res.json(sales);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las ventas' });
+  }
+});
+
+// Ruta para obtener todas las auction
+router.get('/searchauctions', async (req, res) => {
+  try {
+    const auction = await Auction.findAll({
+      limit: 10, // 10 ventas
+      order: [['createdAt', 'DESC']], // Ordenar por fecha de creación
+    });
+    res.json(auction);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las ventas' });
+  }
+});
+
 // Ruta para obtener las ventas de un usuario
-router.get('/:id/sales', async (req, res) => {
+router.get('/searchsales/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await User.findByPk(id, { include: Sale });
+    const user = await User.findByPk(id, {
+      include: Sale,
+      limit: 10, // 10 ventas
+      order: [['createdAt', 'DESC']], // Ordenado por fecha de creación
+    });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    const sales = user.Sales;
+    res.json(sales);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener las ventas del usuario' });
+  }
+});
+
+// Ruta para obtener las Auction de un usuario
+router.get('/searchauction/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByPk(id, {
+      include: Auction,
+      limit: 10, // 10 ventas
+      order: [['createdAt', 'DESC']], // Ordenado por fecha de creación
+    });
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
@@ -144,27 +208,7 @@ router.get('/:id/sales', async (req, res) => {
 
 // Modo subasta
 // Ruta para crear una subasta para un usuario
-router.post('/:id/auctions', async (req, res) => {
-  const { id } = req.params;
-  const { price, description, quantity } = req.body;
+router.post('/createauction/:id/', auctionController.createAuction);
 
-  // Validación de datos
-  if (!price || !description || !quantity) {
-    return res.status(400).json({ error: 'Por favor, completa todos los campos obligatorios' });
-  }
-
-  try {
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    const auction = await auctionController.createAuction(req, res);
-    return res.json(auction);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Ha ocurrido un error al crear la subasta' });
-  }
-});
 
 module.exports = router;
