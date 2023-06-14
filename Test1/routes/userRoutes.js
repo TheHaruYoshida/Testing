@@ -4,6 +4,8 @@ const User = require('../models/User');
 const Sale = require('../models/Sale');
 const auctionController = require('../controllers/auctionController');
 const Auction = require('../models/Auction');
+const Card = require('../models/Card');
+
 
 
 // Ruta para obtener todos los usuarios
@@ -205,6 +207,20 @@ router.get('/searchauction/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las ventas del usuario' });
   }
 });
+
+// modo cartas
+//obtener todas las cartas
+router.get('/searchcards', async (req, res) => {
+  try {
+    const cards = await Card.findAll();
+    res.json(cards);
+  } catch (error) {
+    console.error('Error al obtener las cartas:', error);
+    res.status(500).json({ error: 'Error al obtener las cartas' });
+  }
+});
+
+module.exports = router;
 
 // Modo subasta
 // Ruta para crear una subasta para un usuario
