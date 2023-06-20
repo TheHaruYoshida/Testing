@@ -10,6 +10,8 @@ const Sale = require('./models/Sale');
 const Comment = require('./models/Comment');
 const Card = require('./models/Card');
 const Set = require('./models/Set');
+const Sequelize = require('sequelize');
+
 
 // Importar las rutas de usuarios
 const userRoutes = require('./routes/userRoutes');

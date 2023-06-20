@@ -42,6 +42,7 @@ const createAuction = async (req, res) => {
       end_time,
       created_at: new Date(),
       seller_id: id,
+      condition,
       status: 'pending',
     });
 
